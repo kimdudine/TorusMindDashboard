@@ -1,0 +1,64 @@
+/* Torus theme: brand tokens taken from torusmedicine.com (Nov 2026).
+   Same token NAMES as tokens.css; only values change. Components never use raw values. */
+[data-theme="torus"] {
+  color-scheme: light;
+  /* brand palette (named as on torusmedicine.com) */
+  --torus-moss-shadow: #4a6457;
+  --torus-muted-grove: #809a8c;
+  --torus-golden-haze: #ffe5bd;
+  --torus-bronze-soil: #674f28;
+  --torus-solar-resin: #a37c3f;
+  --torus-deep-canopy: #4d6d71;
+  --torus-lunar-sage: #c0c0a5;
+  --torus-moon-dust: #e9e5de;
+  --torus-obsidian-air: #272d32;
+
+  --bg: var(--torus-moon-dust);
+  --surface: #f7f4ef;
+  --surface-2: #fdfbf7;
+  --surface-sunken: #dfdbd2;
+  --border: #d4cec2;
+  --control-border: #7c8278;
+  --border-strong: #bdb6a7;
+  --text: var(--torus-obsidian-air);
+  --text-muted: #565b56;
+  --text-subtle: #5f645e;
+
+  --accent: var(--torus-moss-shadow);
+  --accent-hover: #3d5348;
+  --accent-fg: #ffffff;
+  --accent-soft: #dfe7e0;
+  --focus: var(--torus-moss-shadow);
+  --heading: var(--torus-bronze-soil);
+  --highlight: var(--torus-golden-haze);
+
+  --success: #3b6a4c;  --success-soft: #dde9df;
+  --warning: #85591a;  --warning-soft: #f6e6c9;
+  --danger: #a1412f;   --danger-soft: #f3dfd8;
+  --info: var(--torus-deep-canopy); --info-soft: #dde8e8;
+
+  --chart-1: var(--torus-moss-shadow);
+  --chart-2: var(--torus-solar-resin);
+  --chart-3: var(--torus-deep-canopy);
+  --chart-4: var(--torus-bronze-soil);
+  --chart-5: var(--torus-muted-grove);
+  --chart-6: #9a9a7e;
+
+  --font-display: "Jost", "Figura Sans", Verdana, sans-serif;
+  --font-sans: "DM Sans", Arial, sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+  --display-weight: 300;
+  --display-tracking: -0.01em;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(39 45 50 / 0.05);
+  --shadow-md: 0 6px 20px rgb(39 45 50 / 0.06);
+  --shadow-lg: 0 18px 44px rgb(39 45 50 / 0.10);
+  --edge: none;
+  --scrim: rgb(39 45 50 / 0.36);
+  --canvas-texture: none;
+}
