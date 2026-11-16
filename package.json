@@ -1,0 +1,12 @@
+{
+  "name": "torus-bd-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Torus Mind & Medicine BD dashboard and referral CRM. Static site, no dependencies.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/write-config.mjs",
+    "dev": "python3 -m http.server 4173 --directory dashboard"
+  },
+  "engines": { "node": ">=18" }
+}

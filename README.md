@@ -2,7 +2,7 @@
 
 Business development dashboard and referral CRM for Torus Mind & Medicine (Stuart, FL). Built by Beyond Consulting with the [dashboard-tools](https://github.com/SacredRebel/dashboard-tools-) framework.
 
-> **Status:** Level 1 clickable prototype. Every name and number in it is **fictional sample data**.
+> **Status:** Deploys to Vercel from this repo. With no database it runs in **demo mode** (fictional sample data). Add two Supabase settings in Vercel and it goes **live**: team login by email link, saved data and real-time updates. See [docs/SETUP.md](docs/SETUP.md).
 
 ## What it tracks
 
@@ -24,26 +24,30 @@ Business development dashboard and referral CRM for Torus Mind & Medicine (Stuar
 
 | Path | What |
 |---|---|
-| `dashboard/` | The prototype: static HTML, CSS and JS with no build step. Open `dashboard/index.html` in a browser. |
+| `dashboard/` | The app: static HTML, CSS and JS with no dependencies. `app.js` is the screens and data layer; `sample.js` is the demo data; `config.js` is written at deploy time. |
+| `vercel.json`, `scripts/write-config.mjs` | Vercel build: writes `config.js` from `SUPABASE_URL` / `SUPABASE_ANON_KEY`, plus security headers |
+| `supabase/schema.sql` | Database tables, team-only security, live updates, import function. Tested on Postgres 16. |
+| `supabase/seed_playbook_partners.sql` | Optional: the 13 referral targets from the playbook |
+| `docs/SETUP.md` | Step-by-step: deploy to Vercel now, connect Supabase later, weekly IntakeQ routine |
 | `dashboard/torus-theme.css` | Torus brand tokens taken from torusmedicine.com. Components use tokens only. |
 | `dashboard/tokens.css` | Design-token names and scale from dashboard-tools |
 | `tracker/Torus_BD_Tracker.xlsx` | The Google Sheets tracker used today. Import it into Torus's Workspace. |
 | `tracker/build_tracker.py` | Regenerates the tracker (`python3 tracker/build_tracker.py`) |
 | `docs/brief.md` | The approved dashboard brief: pages, records, numbers, look |
 | `docs/screenshots/` | Desktop (1280px) and phone (375px) screenshots |
-| `scripts/shoot.py`, `scripts/func.py` | Playwright screenshot and click-through checks |
+| `scripts/shoot.py`, `scripts/func.py`, `scripts/live_test.py` | Screenshots, demo click-through, and live-mode tests against an in-memory database stand-in |
 
 ## Privacy rules (non-negotiable)
 
 - **No patient details in this repo, the tracker or the dashboard.**
-  - Patients are identified by IntakeQ client ID only.
-  - Names, contact details, PHQ-9 answers and insurance stay in IntakeQ.
+  - Patient leads are stored as monthly counts only (per channel, source and credited partner/event).
+  - Names, IDs, contact details, PHQ-9 answers and insurance stay in IntakeQ. The import summarises in the browser.
 - **Website forms that collect patient information must be IntakeQ forms.** This covers the discovery form, PHQ-9 and provider referrals. Webflow is not HIPAA-compliant and signs no BAA.
 - **No Zapier for patient data.**
 - **Real data goes only into accounts covered by a BAA**, such as Google Workspace or IntakeQ.
 
 ## Next steps
 
-- **Level 2: the working app.** Next.js + Supabase on Vercel, with login, row-level security and realtime updates. It stores partners, outreach, events and lead IDs with source, and confirms each vendor's BAA first.
-- **IntakeQ connection.** Start with a weekly export, then move to the IntakeQ API for counts per form and source.
+- **Go live:** create the client's Supabase project and follow docs/SETUP.md part 2.
+- **IntakeQ:** weekly CSV import now (summarised to monthly counts in the browser); the IntakeQ API later.
 - **"For Providers" page** on the website, with a "Make a referral" IntakeQ form and a provider-only partner/RSVP form.
