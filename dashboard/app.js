@@ -34,7 +34,7 @@
     { id: 'D', name: 'Digital / direct', long: 'Digital / direct', color: 'var(--chart-6)' },
   ];
   const act = (id) => ACTIVITIES.find((a) => a.id === id) || ACTIVITIES[5];
-  const SOURCES = ['Provider referral', 'Community event', 'Provider education event', 'Social media', 'Google / organic search', 'Email (Flodesk)', 'Word of mouth', 'Direct walk-in', 'Other'];
+  const SOURCES = ['Provider referral', 'Community event', 'Provider education event', 'Social media', 'Google / organic search', 'Email (Flodesk)', 'Word of mouth', 'Direct walk-in', 'Shari Retreats', 'Shari Yoga', 'Avonny', 'Other'];
   const CHANNELS = ['Discovery form (website)', 'Phone call', 'Email', 'Provider referral form', 'At an event', 'Walk-in'];
   const EVENT_TYPES = ['Lunch-and-learn', 'Webinar', 'Open house', 'Q&A', 'Tea', 'Integration circle', 'Community talk'];
   const TYPES = ['Clinical referrer', 'Hospital colleague', 'Community venue'];
@@ -483,7 +483,7 @@
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const matchList = (val, list, fallback) => { const v = norm(val); if (!v) return fallback; return list.find((x) => norm(x) === v) || list.find((x) => v.includes(norm(x)) || norm(x).includes(v)) || fallback; };
   const matchSource = (val) => { const v = norm(val); if (!v) return 'Other';
-    const rules = [[/refer|doctor|physician|provider|therapist/, 'Provider referral'], [/lunch|webinar|education/, 'Provider education event'], [/event|talk|tea|open house|circle|yoga|class/, 'Community event'], [/insta|facebook|social|tiktok|linkedin/, 'Social media'], [/google|search|online|web/, 'Google / organic search'], [/email|newsletter|flodesk/, 'Email (Flodesk)'], [/friend|family|word|mouth/, 'Word of mouth'], [/walk/, 'Direct walk-in']];
+    const rules = [[/retreat/, 'Shari Retreats'], [/\b(shari|sheri)\b.*yoga|yoga.*\b(shari|sheri)\b/, 'Shari Yoga'], [/\bavonn?e?y\b/, 'Avonny'], [/refer|doctor|physician|provider|therapist/, 'Provider referral'], [/lunch|webinar|education/, 'Provider education event'], [/event|talk|tea|open house|circle|yoga|class/, 'Community event'], [/insta|facebook|social|tiktok|linkedin/, 'Social media'], [/google|search|online|web/, 'Google / organic search'], [/email|newsletter|flodesk/, 'Email (Flodesk)'], [/friend|family|word|mouth/, 'Word of mouth'], [/walk/, 'Direct walk-in']];
     return matchList(val, SOURCES, null) || (rules.find(([re]) => re.test(v)) || [null, 'Other'])[1]; };
   const matchCredit = (val) => { const v = norm(val); if (!v || v.length < 3) return '';
     const hit = DATA.partners.find((p) => [p.contact, p.org].some((x) => norm(x) && (v.includes(norm(x)) || norm(x).includes(v)))) || DATA.events.find((e) => norm(e.name) && (v.includes(norm(e.name)) || norm(e.name).includes(v)));

@@ -28,7 +28,8 @@ wb = Workbook()
 # ---------------- Lists ----------------
 lists = {
     "Source category": ["Provider referral", "Community event", "Provider education event", "Social media",
-                        "Google / organic search", "Email (Flodesk)", "Word of mouth", "Waitlist (other)", "Direct walk-in"],
+                        "Google / organic search", "Email (Flodesk)", "Word of mouth", "Waitlist (other)", "Direct walk-in",
+                        "Shari Retreats", "Shari Yoga", "Avonny"],
     "BD activity": ["1. Practice partnerships (Relive +)", "2. Spravato insurance track", "3. Provider education series",
                     "4. Wellness community events", "5. Shari's physician network", "Digital / direct"],
     "Partner type": ["Clinical referrer", "Hospital colleague", "Community venue", "Marketing partner"],

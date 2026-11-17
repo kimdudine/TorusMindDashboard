@@ -12,6 +12,8 @@ Jane Doe,11/02/2026,Instagram,,11/05/2026,4-session series
 John Roe,11/03/2026,My doctor referred me,Dr. Test Partner,,
 Ann Poe,11/09/2026,Google,,,
 Bob Loe,10/20/2026,Friend,,10/25/2026,
+Dee Moe,11/10/2026,Sheri Yoga,,,
+Ed Noe,11/11/2026,Avonney,,,
 """
 
 def serve():
@@ -71,16 +73,17 @@ async def main():
         await pg.fill("[data-import-text]", CSV); await pg.click("text=Read the file"); await pg.wait_for_timeout(100)
         await pg.select_option("[name=via]", "Discovery form (website)"); await pg.click("button:has-text(\"Preview the totals\")"); await pg.wait_for_timeout(100)
         preview = await pg.inner_text("[data-import-preview]")
-        ok("preview shows 4 patients", "4 patients" in preview)
+        ok("preview shows 6 patients", "6 patients" in preview)
         await pg.screenshot(path=os.path.join(ROOT, "docs/screenshots/live-import-1280.png"))
         await pg.click("[data-act=import-save]"); await pg.wait_for_timeout(300)
         rows = await pg.evaluate("window.__db.lead_counts")
         ok("only counts saved (no names)", all(set(r.keys()) <= {"id", "month", "via", "source", "credit_id", "leads", "consults", "converted", "revenue"} for r in rows) and "Jane" not in json.dumps(rows))
-        ok("totals correct", sum(r["leads"] for r in rows) == 4 and sum(r["converted"] for r in rows) == 1 and any(r["credit_id"] == "P-001" for r in rows))
+        ok("totals correct", sum(r["leads"] for r in rows) == 6 and sum(r["converted"] for r in rows) == 1 and any(r["credit_id"] == "P-001" for r in rows))
+        ok("new sources matched (Sheri Yoga -> Shari Yoga, Avonney -> Avonny)", {r["source"] for r in rows} >= {"Shari Yoga", "Avonny"})
         ok("discovery KPI shows this month's leads", "Discovery form, this month" in await pg.inner_text("[data-view]"))
         # 6. Re-import replaces (no double count)
         await pg.click("text=Import IntakeQ export"); await pg.fill("[data-import-text]", CSV); await pg.click("text=Read the file"); await pg.click("button:has-text(\"Preview the totals\")"); await pg.click("[data-act=import-save]"); await pg.wait_for_timeout(300)
-        ok("re-import does not double count", await pg.evaluate("window.__db.lead_counts.reduce((s,r)=>s+r.leads,0)") == 4)
+        ok("re-import does not double count", await pg.evaluate("window.__db.lead_counts.reduce((s,r)=>s+r.leads,0)") == 6)
         # 7. Settings + team
         await pg.goto(base + "#setup"); await pg.wait_for_timeout(200)
         ok("shows Live connection", await pg.locator(".chip.success >> text=Live").count() == 1)
