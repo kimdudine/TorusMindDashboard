@@ -11,5 +11,7 @@ const live = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url) && key.length > 20
 
 if ((url || key) && !live) console.warn('[torus] SUPABASE_URL or SUPABASE_ANON_KEY looks wrong; deploying in demo mode.');
 const cfg = live ? JSON.stringify({ supabaseUrl: url, supabaseAnonKey: key }) : 'null';
-writeFileSync(out, `/* Generated at deploy time. ${live ? 'LIVE: Supabase connected.' : 'DEMO: sample data.'} */\nwindow.TORUS_CONFIG = ${cfg};\n`);
+// sample-upload branch: in demo mode, load patient numbers from a de-identified sample export.
+const demoCsv = (process.env.DEMO_CSV ?? 'sample-upload.csv').trim();
+writeFileSync(out, `/* Generated at deploy time. ${live ? 'LIVE: Supabase connected.' : 'DEMO: sample data.'} */\nwindow.TORUS_CONFIG = ${cfg};\n${!live && demoCsv ? `window.TORUS_DEMO = ${JSON.stringify({ csv: demoCsv })};\n` : ''}`);
 console.log(`[torus] config.js written: ${live ? 'live (' + url + ')' : 'demo mode'}`);

@@ -34,8 +34,8 @@
     { id: 'D', name: 'Digital / direct', long: 'Digital / direct', color: 'var(--chart-6)' },
   ];
   const act = (id) => ACTIVITIES.find((a) => a.id === id) || ACTIVITIES[5];
-  const SOURCES = ['Provider referral', 'Community event', 'Provider education event', 'Social media', 'Google / organic search', 'Email (Flodesk)', 'Word of mouth', 'Direct walk-in', 'Shari Retreats', 'Shari Yoga', 'Avonny', 'Other'];
-  const CHANNELS = ['Discovery form (website)', 'Phone call', 'Email', 'Provider referral form', 'At an event', 'Walk-in'];
+  const SOURCES = ['Provider referral', 'Community event', 'Provider education event', 'Social media', 'Google / organic search', 'Email (Flodesk)', 'Word of mouth', 'Direct walk-in', 'Shari Retreats', 'Shari Yoga', 'Avonny', 'Psychology Today', 'Other', 'Not recorded'];
+  const CHANNELS = ['Discovery form (website)', 'Phone call', 'Email', 'Provider referral form', 'At an event', 'Walk-in', 'Not recorded'];
   const EVENT_TYPES = ['Lunch-and-learn', 'Webinar', 'Open house', 'Q&A', 'Tea', 'Integration circle', 'Community talk'];
   const TYPES = ['Clinical referrer', 'Hospital colleague', 'Community venue'];
   const OWNERS = ['Kim', 'Shari', 'Annette', 'Stephanie', 'Avonny'];
@@ -300,6 +300,7 @@
       const seg = `<div class="seg" role="group" aria-label="Time range">${[[1, 'This month'], [92, 'Last 3 months'], ['all', 'All time']].map(([v, l]) => `<button data-prange="${v}" aria-pressed="${String(ui.prange) === String(v)}">${l}</button>`).join('')}</div>`;
       const filtered = ui.via || ui.pact;
       return `<section class="kpis" aria-label="Discovery form">${kpi('Discovery form, this month', dfm.leads, `${dfm.consults} became consults`)}${kpi('Discovery form, all time', df.leads, all.leads ? `${pct(df.leads / all.leads)} of all patient leads` : 'No leads yet')}${kpi('Discovery → consult', df.leads ? pct(df.consults / df.leads) : '–', plural(df.consults, 'consult') + ' booked')}${kpi('All patient leads, this month', allm.leads, `${all.leads} all time`)}${kpi('Converted to a package', all.converted, money(all.revenue) + ' revenue')}</section>
+        ${ui.demoInfo ? (ui.demoInfo.error ? `<div class="card" role="alert"><p>Couldn't read ${esc(ui.demoInfo.file)}. Showing sample counts instead.</p></div>` : `<div class="card next"><h2>Loaded from ${esc(ui.demoInfo.file)}</h2><p style="margin-top:var(--space-1)">${plural(ui.demoInfo.patients, 'de-identified row')} → ${plural(ui.demoInfo.rows, 'row')} of monthly counts, ${esc(fmtMonth(ui.demoInfo.months[0]))} to ${esc(fmtMonth(ui.demoInfo.months.at(-1)))}.${ui.demoInfo.unmatched ? ` ${plural(ui.demoInfo.unmatched, 'referrer')} didn't match a partner or event and count as uncredited.` : ''} Same import the team will use each week.${ui.demoInfo.note ? ' ' + esc(ui.demoInfo.note) : ''}</p></div>`) : ''}
         <div class="toolbar">${seg}<span class="muted">Counts only. Patient details stay in IntakeQ.</span></div>
         <section class="card table-wrap" style="padding:0"><div class="card-head" style="padding:var(--space-5) var(--space-5) 0"><h2>How patients came in</h2><span class="muted">The source columns say what drove them</span></div>
           ${withState(ch.filter((x) => x.leads), { msg: 'No patient leads recorded for this period. Import the IntakeQ export or add counts.', btn: 'Import IntakeQ export', act: 'import' }, (items) => `<table class="cards"><thead><tr><th>Came in via</th><th class="right">Leads</th><th class="right">Consults</th><th class="right">Converted</th><th class="right">Lead → consult</th></tr></thead><tbody>${items.map((x) => `<tr><td>${x.c === CHANNELS[0] ? `<b>${esc(x.c)}</b>` : esc(x.c)}</td><td class="right num" data-label="Leads">${x.leads}</td><td class="right num" data-label="Consults">${x.consults}</td><td class="right num" data-label="Converted">${x.converted}</td><td class="right num" data-label="Lead → consult">${x.leads ? pct(x.consults / x.leads) : '–'}</td></tr>`).join('')}</tbody></table>`)}</section>
@@ -478,12 +479,14 @@
   }
   const toISO = (v) => { const s = String(v || '').trim(); let m;
     if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    if ((m = s.match(/^(\d{4})-(\d{1,2})$/))) return `${m[1]}-${m[2].padStart(2, '0')}-01`;
+    if ((m = s.match(/^(\d{1,2})\/(\d{4})$/))) return `${m[2]}-${m[1].padStart(2, '0')}-01`;
     if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
     const t = Date.parse(s); return isNaN(t) ? '' : iso(new Date(t)); };
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const matchList = (val, list, fallback) => { const v = norm(val); if (!v) return fallback; return list.find((x) => norm(x) === v) || list.find((x) => v.includes(norm(x)) || norm(x).includes(v)) || fallback; };
   const matchSource = (val) => { const v = norm(val); if (!v) return 'Other';
-    const rules = [[/retreat/, 'Shari Retreats'], [/\b(shari|sheri)\b.*yoga|yoga.*\b(shari|sheri)\b/, 'Shari Yoga'], [/\bavonn?e?y\b/, 'Avonny'], [/refer|doctor|physician|provider|therapist/, 'Provider referral'], [/lunch|webinar|education/, 'Provider education event'], [/event|talk|tea|open house|circle|yoga|class/, 'Community event'], [/insta|facebook|social|tiktok|linkedin/, 'Social media'], [/google|search|online|web/, 'Google / organic search'], [/email|newsletter|flodesk/, 'Email (Flodesk)'], [/friend|family|word|mouth/, 'Word of mouth'], [/walk/, 'Direct walk-in']];
+    const rules = [[/retreat/, 'Shari Retreats'], [/\b(shari|sheri)\b.*yoga|yoga.*\b(shari|sheri)\b/, 'Shari Yoga'], [/\bavonn?e?y\b/, 'Avonny'], [/psych(ology)? today/, 'Psychology Today'], [/refer|doctor|physician|provider|therapist/, 'Provider referral'], [/lunch|webinar|education/, 'Provider education event'], [/event|talk|tea|open house|circle|yoga|class/, 'Community event'], [/insta|facebook|social|tiktok|linkedin/, 'Social media'], [/google|search|online|web/, 'Google / organic search'], [/email|newsletter|flodesk/, 'Email (Flodesk)'], [/friend|family|word|mouth/, 'Word of mouth'], [/walk/, 'Direct walk-in']];
     return matchList(val, SOURCES, null) || (rules.find(([re]) => re.test(v)) || [null, 'Other'])[1]; };
   const matchCredit = (val) => { const v = norm(val); if (!v || v.length < 3) return '';
     const hit = DATA.partners.find((p) => [p.contact, p.org].some((x) => norm(x) && (v.includes(norm(x)) || norm(x).includes(v)))) || DATA.events.find((e) => norm(e.name) && (v.includes(norm(e.name)) || norm(e.name).includes(v)));
@@ -499,35 +502,48 @@
       </div>`, true);
   }
   function importMapping(rows) {
-    const head = rows[0].map((h) => h.trim()), guess = (re) => String(head.findIndex((h) => re.test(h.toLowerCase())));
+    const head = rows[0].map((h) => h.trim()), g = guessMap(head), guess = (k) => String(g[k]);
     const sel = (name, label, g, optional = true) => `<label class="field-label">${label}<select class="field" name="${name}">${optional ? '<option value="-1">Not in this file</option>' : ''}${head.map((h, i) => `<option value="${i}"${String(i) === g ? ' selected' : ''}>${esc(h || 'Column ' + (i + 1))}</option>`).join('')}</select></label>`;
     $('[data-import-map]').innerHTML = `<form class="form-grid" data-form="import-map" novalidate><p class="full muted">${plural(rows.length - 1, 'row')} found. Match the columns, then preview the totals.</p>
-      ${sel('date', 'First contact date', guess(/date|created|submitted|added/), false)}
-      ${sel('source', 'How they heard about us', guess(/hear|source|referr(al)? source|how did/))}
-      ${sel('credit', 'Referring provider or event (optional)', guess(/referring|referred by|provider name|event/))}
-      ${sel('consult', 'Consult date (optional)', guess(/consult|appointment|booked/))}
-      ${sel('pkg', 'Package or service (optional)', guess(/package|service|plan/))}
-      <label class="field-label">Came in via<select class="field" name="via">${opts(CHANNELS)}</select></label>
+      ${sel('date', 'First contact date or month', guess('date'), false)}
+      ${sel('source', 'How they heard about us', guess('source'))}
+      ${sel('credit', 'Referring provider or event (optional)', guess('credit'))}
+      ${sel('consult', 'Consult date or booked yes/no (optional)', guess('consult'))}
+      ${sel('pkg', 'Package or service (optional)', guess('pkg'))}
+      ${sel('viaCol', 'Came in via column (optional)', guess('viaCol'))}
+      <label class="field-label">Came in via, when there's no column<select class="field" name="via">${opts(CHANNELS)}</select></label>
       <div class="full top-actions"><button class="btn primary">Preview the totals</button></div></form><div data-import-preview></div>`;
     ui.importRows = rows;
   }
-  function importPreview(map) {
-    const rows = ui.importRows.slice(1), agg = new Map(); let skipped = 0, unmatched = 0;
+  // Shared by the import drawer and the sample-upload demo: column guesses, then rows -> monthly counts.
+  function guessMap(head) {
+    const f = (re, not) => head.findIndex((h) => re.test(h.toLowerCase()) && !(not && not.test(h.toLowerCase())));
+    return { date: Math.max(0, f(/date|created|submitted|added|month/, /consult|birth|dob/)), source: f(/hear|source|how did/), credit: f(/referring|referred by|provider name|event/),
+      consult: f(/consult|appointment|booked/), pkg: f(/package|service|plan/), viaCol: f(/came in via|channel|form|intake type/) };
+  }
+  const YES = /^(y|yes|true|1|booked|x)$/i;
+  function aggregateRows(rows, map) {
+    const agg = new Map(); let skipped = 0, unmatched = 0;
     rows.forEach((r) => {
       const first = toISO(r[map.date]); if (!first) { skipped++; return; }
+      const via = map.viaCol >= 0 ? matchList(r[map.viaCol], CHANNELS, map.via) : map.via;
       const source = map.source >= 0 ? matchSource(r[map.source]) : 'Other';
       const credit = map.credit >= 0 ? matchCredit(r[map.credit]) : ''; if (map.credit >= 0 && String(r[map.credit] || '').trim() && !credit) unmatched++;
       const pkgRaw = map.pkg >= 0 ? String(r[map.pkg] || '').trim() : '', pkg = matchList(pkgRaw, Object.keys(PACKAGES).slice(1), '');
       const conv = !!pkgRaw && !/^(none|no|n\/a|-)$/i.test(pkgRaw);
-      const month = monthOf(first), key = [month, map.via, source, credit].join('|');
-      const c = agg.get(key) || { month, via: map.via, source, credit, leads: 0, consults: 0, converted: 0, revenue: 0 };
-      c.leads++; if (map.consult >= 0 && toISO(r[map.consult])) c.consults++; if (conv) { c.converted++; c.revenue += PACKAGES[pkg] || 0; }
+      const month = monthOf(first), key = [month, via, source, credit].join('|');
+      const c = agg.get(key) || { month, via, source, credit, leads: 0, consults: 0, converted: 0, revenue: 0 };
+      const cv = map.consult >= 0 ? String(r[map.consult] || '').trim() : '';
+      c.leads++; if (cv && (YES.test(cv) || toISO(cv))) c.consults++; if (conv) { c.converted++; c.revenue += PACKAGES[pkg] || 0; }
       agg.set(key, c);
     });
-    const out = [...agg.values()].sort((a, b) => b.month.localeCompare(a.month));
+    return { out: [...agg.values()].sort((a, b) => b.month.localeCompare(a.month)), skipped, unmatched, patients: rows.length - skipped };
+  }
+  function importPreview(map) {
+    const rows = ui.importRows.slice(1), { out, skipped, unmatched } = aggregateRows(rows, map);
     ui.importAgg = out;
-    const months = [...new Set(out.map((c) => c.month))];
-    $('[data-import-preview]').innerHTML = !out.length ? `<div class="state"><p>No rows had a readable date. Check the "First contact date" column.</p></div>` : `<div class="card" style="margin-top:var(--space-4)"><h3>Totals to save</h3><p class="muted" style="margin:var(--space-1) 0 var(--space-3)">${plural(rows.length - skipped, 'patient')} → ${plural(out.length, 'row')} of counts. Saving replaces the existing "${esc(map.via)}" counts for ${months.map((m) => esc(fmtMonth(m))).join(', ')}.${skipped ? ` ${plural(skipped, 'row')} skipped (no date).` : ''}${unmatched ? ` ${plural(unmatched, 'referrer')} didn't match a partner or event and count as uncredited; add them on Partners and re-import.` : ''}</p>
+    const months = [...new Set(out.map((c) => c.month))], vias = [...new Set(out.map((c) => c.via))];
+    $('[data-import-preview]').innerHTML = !out.length ? `<div class="state"><p>No rows had a readable date. Check the "First contact date" column.</p></div>` : `<div class="card" style="margin-top:var(--space-4)"><h3>Totals to save</h3><p class="muted" style="margin:var(--space-1) 0 var(--space-3)">${plural(rows.length - skipped, 'patient')} → ${plural(out.length, 'row')} of counts. Saving replaces the existing ${vias.map((x) => '"' + esc(x) + '"').join(', ')} counts for ${months.map((m) => esc(fmtMonth(m))).join(', ')}.${skipped ? ` ${plural(skipped, 'row')} skipped (no date).` : ''}${unmatched ? ` ${plural(unmatched, 'referrer')} didn't match a partner or event and count as uncredited; add them on Partners and re-import.` : ''}</p>
       <div class="table-wrap"><table class="cards"><thead><tr><th>Month</th><th>Source</th><th>Credited to</th><th class="right">Leads</th><th class="right">Consults</th><th class="right">Converted</th></tr></thead><tbody>${out.map((c) => `<tr><td>${esc(fmtMonth(c.month))}</td><td data-label="Source">${esc(c.source)}</td><td data-label="Credited to">${c.credit ? esc(partner(c.credit)?.org || eventById(c.credit)?.name) : '<span class="muted">–</span>'}</td><td class="right num" data-label="Leads">${c.leads}</td><td class="right num" data-label="Consults">${c.consults}</td><td class="right num" data-label="Converted">${c.converted}</td></tr>`).join('')}</tbody></table></div>
       <div class="top-actions" style="margin-top:var(--space-4)"><button class="btn primary" data-act="import-save">Save ${plural(out.length, 'row')} of counts</button><button class="btn" data-act="close">Cancel</button></div></div>`;
   }
@@ -610,7 +626,7 @@
     e.preventDefault(); const f = e.target, v = Object.fromEntries(new FormData(f)), kind = f.dataset.form, btn = f.querySelector('button.primary');
     const need = (name, msg) => { const el = $('#err-' + name); if (!String(v[name] || '').trim()) { if (el) el.textContent = msg; f[name].focus(); return true; } if (el) el.textContent = ''; return false; };
     if (kind === 'auth') return signIn(f, v);
-    if (kind === 'import-map') { const map = Object.fromEntries(['date', 'source', 'credit', 'consult', 'pkg'].map((k) => [k, +v[k]])); map.via = v.via; return importPreview(map); }
+    if (kind === 'import-map') { const map = Object.fromEntries(['date', 'source', 'credit', 'consult', 'pkg'].map((k) => [k, +v[k]])); map.via = v.via; map.viaCol = +v.viaCol; return importPreview(map); }
     try {
       if (btn) btn.disabled = true;
       if (kind === 'partner') {
@@ -678,12 +694,32 @@
   function footer() {
     $('[data-foot]').innerHTML = LIVE
       ? `<p class="who">${esc(session?.user?.email || '')}</p><button class="btn small" data-act="sign-out">Sign out</button>`
+      : window.TORUS_DEMO?.footer ? `<p class="sample">${esc(window.TORUS_DEMO.footer)}</p>`
+      : ui.demoInfo && !ui.demoInfo.error ? `<p class="sample">Sample upload · patient numbers come from ${esc(ui.demoInfo.file)} (${plural(ui.demoInfo.patients, 'row')}, de-identified). Partners and events are fictional.</p>`
       : '<p class="sample">Demo · sample data, all names and numbers are fictional</p>';
   }
 
   /* ---------------- Boot ---------------- */
   async function boot() {
-    if (!LIVE) { document.body.classList.remove('signed-out'); footer(); route(); return; }
+    if (!LIVE) {
+      document.body.classList.remove('signed-out');
+      const demo = window.TORUS_DEMO;
+      if (demo && demo.blank && !ui.demoInfo) { DATA = EMPTY(); DATA.partners = (demo.partners || []).map((p) => ({ next: '', nextStep: '', metAt: '', phone: '', ...p })); if (demo.openDate) DATA.settings.openDate = demo.openDate; }
+      if (demo && demo.counts && !ui.demoInfo) {
+        DATA.counts = demo.counts.map((c, i) => ({ consults: 0, converted: 0, revenue: 0, credit: '', ...c, id: 'R' + i }));
+        ui.demoInfo = { file: demo.label || 'an IntakeQ export', patients: DATA.counts.reduce((s, c) => s + c.leads, 0), rows: DATA.counts.length, unmatched: 0, months: [...new Set(DATA.counts.map((c) => c.month))].sort(), note: demo.note || '' };
+      }
+      if (demo && demo.csv && !ui.demoInfo) {
+        try {
+          const text = await fetch(demo.csv, { cache: 'no-store' }).then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); });
+          const rows = parseCSV(text), map = { ...guessMap(rows[0].map((h) => h.trim())), via: CHANNELS[0] };
+          const res = aggregateRows(rows.slice(1), map);
+          DATA.counts = res.out.map((c, i) => ({ ...c, id: 'U' + i }));
+          ui.demoInfo = { file: demo.csv, patients: res.patients, rows: res.out.length, unmatched: res.unmatched, months: [...new Set(res.out.map((c) => c.month))].sort() };
+        } catch (err) { console.warn('sample upload failed', err); ui.demoInfo = { error: true, file: demo.csv }; }
+      }
+      footer(); route(); return;
+    }
     try {
       if (!db) await connect();
       if (!session) { footer(); return signInView(); }

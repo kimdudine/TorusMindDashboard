@@ -1,7 +1,12 @@
 import sys, asyncio
 from playwright.async_api import async_playwright
 import os
-base = "file://" + os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dashboard", "index.html"))
+import threading, functools, http.server
+class _Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a): pass
+_srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(_Quiet, directory=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dashboard"))))
+threading.Thread(target=_srv.serve_forever, daemon=True).start()
+base = f"http://127.0.0.1:{_srv.server_address[1]}/index.html"
 routes = ["today","partners","patients","partner-P-001","pipeline","events","event-E-003","sources","calendar","setup"]
 out = os.path.join(os.path.dirname(__file__), "..", "docs", "screenshots")
 async def main():
