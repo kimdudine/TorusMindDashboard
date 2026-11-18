@@ -11,6 +11,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path="/usr/bin/google-chrome")
         pg = await b.new_page(viewport={"width":1280,"height":900}); errs=[]
+        await pg.route("**/config.js", lambda r: r.fulfill(body="window.TORUS_CONFIG = null;", content_type="application/javascript"))  # tests use the built-in sample data
         pg.on("pageerror", lambda e: errs.append(str(e)))
         await pg.goto(B+"#partners")
         await pg.click("text=Add a partner"); await pg.click("text=Add partner")

@@ -15,6 +15,7 @@ async def main():
         errs = []
         for w in (1280, 375):
             pg = await b.new_page(viewport={"width": w, "height": 900})
+            await pg.route("**/config.js", lambda r: r.fulfill(body="window.TORUS_CONFIG = null;", content_type="application/javascript"))  # tests use the built-in sample data
             pg.on("pageerror", lambda e, w=w: errs.append(f"[{w}] {e}"))
             pg.on("console", lambda m, w=w: m.type == "error" and "ERR_" not in m.text and errs.append(f"[{w}] {m.text}"))
             for r in routes:
